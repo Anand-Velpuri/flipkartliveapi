@@ -289,3 +289,8 @@ def search_get(
 @app.post("/search", response_model=SearchResponse)
 def search_post(request: SearchRequest) -> SearchResponse:
     return run_flipkart_search(request.query, request.page)
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("app:app", host="0.0.0.0", port=7860)
