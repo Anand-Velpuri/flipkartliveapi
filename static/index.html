@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f8fafc" />
+  <meta name="description" content="Search Flipkart products and compare prices, ratings and deals." />
+  <title>Flipkart Search</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: [
+              "Inter",
+              "ui-sans-serif",
+              "system-ui",
+              "-apple-system",
+              "BlinkMacSystemFont",
+              "Segoe UI",
+              "sans-serif"
+            ]
+          },
+          boxShadow: {
+            soft: "0 10px 30px rgba(15, 23, 42, 0.06)"
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .line-clamp-2,
+    .line-clamp-3 {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .line-clamp-2 {
+      -webkit-line-clamp: 2;
+    }
+
+    .line-clamp-3 {
+      -webkit-line-clamp: 3;
+    }
+
+    .spinner {
+      width: 17px;
+      height: 17px;
+      border: 2px solid rgba(255, 255, 255, .45);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg,
+          #f1f5f9 25%,
+          #e8edf5 50%,
+          #f1f5f9 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.25s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      to {
+        background-position: -200% 0;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-slate-50 font-sans text-slate-900">
+
+  <!-- Header -->
+  <header class="border-b border-slate-200 bg-white">
+    <div class="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+
+      <a href="/" class="flex min-w-0 items-center gap-2.5">
+        <span
+          class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-600 text-white shadow-md shadow-blue-600/20">
+          <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M5 8h14l1 12H4L5 8Z" stroke-linejoin="round" />
+            <path d="M9 9V6a3 3 0 0 1 6 0v3" stroke-linecap="round" />
+          </svg>
+        </span>
+
+        <span class="truncate text-base font-extrabold tracking-tight sm:text-lg">
+          Flipkart <span class="text-blue-600">Search</span>
+        </span>
+      </a>
+
+      <div class="flex items-center gap-2 text-xs font-medium text-slate-500 sm:text-sm">
+        <span class="relative flex h-2.5 w-2.5">
+          <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-40"></span>
+          <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+        </span>
+
+        <span class="hidden sm:inline">Live product search</span>
+        <span class="sm:hidden">Live search</span>
+      </div>
+
+    </div>
+  </header>
+
+
+  <!-- Main -->
+  <main class="mx-auto w-full max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
+
+    <!-- Search Section -->
+    <section class="mx-auto max-w-3xl py-10 text-center sm:py-14">
+
+      <div
+        class="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-blue-700">
+        <span>✦</span>
+        Product discovery made simple
+      </div>
+
+      <h1 class="mt-5 text-3xl font-black leading-tight tracking-tight text-slate-950 sm:text-4xl md:text-5xl">
+        Find the right product.
+        <br class="hidden sm:block" />
+        <span class="text-blue-600">At the right price.</span>
+      </h1>
+
+      <p class="mx-auto mt-4 max-w-xl text-sm leading-6 text-slate-500 sm:text-base">
+        Search Flipkart in plain English. Compare prices, discounts, ratings and product details in one place.
+      </p>
+
+      <!-- Search Form -->
+      <form id="searchForm"
+        class="mt-7 flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-soft transition focus-within:border-blue-300 focus-within:ring-4 focus-within:ring-blue-100 sm:flex-row">
+
+        <label for="query" class="sr-only">
+          Search products
+        </label>
+
+        <div class="flex min-w-0 flex-1 items-center gap-3 px-3">
+
+          <svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0 text-slate-400" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m20 20-4-4" stroke-linecap="round"></path>
+          </svg>
+
+          <input id="query" name="query" type="search" autocomplete="off" required
+            placeholder="Try 'gaming laptops under 80000'"
+            class="h-12 min-w-0 w-full border-0 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400 sm:text-base" />
+
+        </div>
+
+        <button id="searchButton" type="submit"
+          class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200 disabled:cursor-wait disabled:opacity-70">
+          <span id="buttonLabel">Search products</span>
+
+          <svg id="buttonArrow" viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14m-6-6 6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+
+      </form>
+
+
+      <!-- Search Suggestions -->
+      <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
+        <span class="mr-1 text-xs text-slate-400">Popular:</span>
+
+        <button type="button" data-query="mobiles under 30000"
+          class="suggestion rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700">
+          Mobiles under 30k
+        </button>
+
+        <button type="button" data-query="laptops under 50000"
+          class="suggestion rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700">
+          Laptops under 50k
+        </button>
+
+        <button type="button" data-query="gaming laptops"
+          class="suggestion rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700">
+          Gaming laptops
+        </button>
+
+        <button type="button" data-query="Samsung 5G phones"
+          class="suggestion rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700">
+          Samsung 5G phones
+        </button>
+      </div>
+
+    </section>
+
+
+    <!-- Search Results -->
+    <section id="resultsSection" class="pb-8">
+
+      <!-- Results Header -->
+      <div id="resultsHead" class="mb-5 hidden flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+
+        <div class="min-w-0">
+          <h2 id="resultsTitle" class="break-words text-xl font-extrabold tracking-tight text-slate-900 sm:text-2xl">
+            Search results
+          </h2>
+
+          <p id="resultsMeta" class="mt-1 text-sm text-slate-500">
+          </p>
+        </div>
+
+        <!-- Sorting -->
+        <label class="flex shrink-0 items-center gap-2 text-xs font-medium text-slate-500">
+          Sort by
+
+          <select id="sortSelect"
+            class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100">
+            <option value="relevance">Relevance</option>
+            <option value="price-asc">Price: Low to high</option>
+            <option value="price-desc">Price: High to low</option>
+            <option value="rating">Customer rating</option>
+            <option value="discount">Biggest discount</option>
+          </select>
+        </label>
+
+      </div>
+
+
+      <!-- Initial / Empty / Error State -->
+      <div id="statePanel" class="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-12 text-center">
+
+        <div class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-blue-50 text-blue-600">
+          <svg viewBox="0 0 24 24" class="h-7 w-7" fill="none" stroke="currentColor" stroke-width="1.7">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m20 20-4-4" stroke-linecap="round"></path>
+          </svg>
+        </div>
+
+        <h3 id="stateTitle" class="mt-4 text-base font-bold text-slate-800">
+          What are you looking for?
+        </h3>
+
+        <p id="stateMessage" class="mx-auto mt-1 max-w-md text-sm leading-6 text-slate-500">
+          Enter a product or budget above to see matching Flipkart products.
+        </p>
+
+      </div>
+
+
+      <!-- Loading Skeleton -->
+      <div id="skeletonGrid" class="hidden grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+
+        <div class="skeleton h-[360px] rounded-2xl"></div>
+        <div class="skeleton h-[360px] rounded-2xl"></div>
+        <div class="skeleton h-[360px] rounded-2xl"></div>
+        <div class="skeleton h-[360px] rounded-2xl"></div>
+
+      </div>
+
+
+      <!-- Product Grid -->
+      <div id="productGrid" class="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-200 bg-white">
+    <div
+      class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-5 text-center text-xs text-slate-400 sm:flex-row sm:px-6 sm:text-left lg:px-8">
+
+      <span>
+        Flipkart Search · Product information is provided by Flipkart.
+      </span>
+
+      <a href="/docs" class="font-semibold text-slate-500 transition hover:text-blue-600">
+        API documentation ↗
+      </a>
+
+    </div>
+  </footer>
+
+
+  <!-- JavaScript -->
+  <script>
+
+    const form = document.getElementById('searchForm');
+    const input = document.getElementById('query');
+
+    const searchButton = document.getElementById('searchButton');
+    const buttonLabel = document.getElementById('buttonLabel');
+    const buttonArrow = document.getElementById('buttonArrow');
+
+    const statePanel = document.getElementById('statePanel');
+    const stateTitle = document.getElementById('stateTitle');
+    const stateMessage = document.getElementById('stateMessage');
+
+    const skeletonGrid = document.getElementById('skeletonGrid');
+    const productGrid = document.getElementById('productGrid');
+
+    const resultsHead = document.getElementById('resultsHead');
+    const resultsTitle = document.getElementById('resultsTitle');
+    const resultsMeta = document.getElementById('resultsMeta');
+
+    const sortSelect = document.getElementById('sortSelect');
+
+    let currentProducts = [];
+
+    const currency = new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    });
+
+
+    // Format price
+    function formatPrice(value) {
+
+      return typeof value === 'number' && Number.isFinite(value)
+        ? currency.format(value)
+        : 'Price unavailable';
+
+    }
+
+
+    // Validate external URLs
+    function safeExternalUrl(value, allowedDomain) {
+
+      if (typeof value !== 'string' || !value.trim()) {
+        return null;
+      }
+
+      try {
+
+        const url = new URL(value, window.location.origin);
+        const host = url.hostname.toLowerCase();
+
+        const allowed = allowedDomain.some(domain =>
+          host === domain || host.endsWith('.' + domain)
+        );
+
+        return url.protocol === 'https:' && allowed
+          ? url.href
+          : null;
+
+      } catch (_) {
+        return null;
+      }
+
+    }
+
+
+    // Create DOM elements safely
+    function makeElement(tag, className, text) {
+
+      const node = document.createElement(tag);
+
+      if (className) {
+        node.className = className;
+      }
+
+      if (text !== undefined && text !== null) {
+        node.textContent = String(text);
+      }
+
+      return node;
+
+    }
+
+
+    // Fallback image
+    const fallbackImage =
+      'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="320" height="240" viewBox="0 0 320 240"%3E%3Crect width="320" height="240" rx="16" fill="%23f1f5f9"/%3E%3Cpath d="M115 70h90v80h-90z" fill="none" stroke="%23cbd5e1" stroke-width="5"/%3E%3Ccircle cx="137" cy="94" r="8" fill="%23cbd5e1"/%3E%3Cpath d="m122 139 28-28 18 18 14-14 20 24" fill="none" stroke="%23cbd5e1" stroke-width="5" stroke-linejoin="round"/%3E%3Ctext x="160" y="184" text-anchor="middle" fill="%2394a3b8" font-family="Arial" font-size="13"%3EImage unavailable%3C/text%3E%3C/svg%3E';
+
+
+    // Build product card
+    function renderProduct(product) {
+
+      const card = makeElement(
+        'article',
+        'group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:border-blue-200 hover:shadow-soft'
+      );
+
+
+      // Product image
+      const imageWrap = makeElement(
+        'div',
+        'relative flex h-48 items-center justify-center bg-white p-4 sm:h-52'
+      );
+
+      const image = makeElement(
+        'img',
+        'h-full w-full object-contain'
+      );
+
+      const imageUrl = safeExternalUrl(
+        product.image_url,
+        ['flixcart.com']
+      );
+
+      image.alt = product.title || 'Product image';
+      image.loading = 'lazy';
+      image.decoding = 'async';
+      image.src = imageUrl || fallbackImage;
+
+      image.addEventListener('error', () => {
+        image.src = fallbackImage;
+      }, { once: true });
+
+      imageWrap.append(image);
+
+
+      // Discount badge
+      if (
+        typeof product.discount === 'number' &&
+        product.discount > 0
+      ) {
+
+        imageWrap.append(
+          makeElement(
+            'span',
+            'absolute left-3 top-3 rounded-lg border border-emerald-100 bg-emerald-50 px-2 py-1 text-[10px] font-extrabold text-emerald-700',
+            `${product.discount}% OFF`
+          )
+        );
+
+      }
+
+      card.append(imageWrap);
+
+
+      // Product content
+      const content = makeElement(
+        'div',
+        'flex flex-1 flex-col p-4'
+      );
+
+
+      // Brand
+      if (product.brand) {
+
+        content.append(
+          makeElement(
+            'p',
+            'mb-1 text-[10px] font-extrabold uppercase tracking-widest text-slate-400',
+            product.brand
+          )
+        );
+
+      }
+
+
+      // Title
+      content.append(
+        makeElement(
+          'h3',
+          'line-clamp-2 min-h-10 text-sm font-bold leading-5 text-slate-800',
+          product.title || 'Untitled product'
+        )
+      );
+
+
+      // Rating
+      const ratingRow = makeElement(
+        'div',
+        'mt-3 flex min-h-6 items-center gap-2 text-xs text-slate-500'
+      );
+
+      if (typeof product.rating === 'number') {
+
+        ratingRow.append(
+          makeElement(
+            'span',
+            'inline-flex items-center gap-1 rounded-md bg-emerald-600 px-2 py-1 font-bold text-white',
+            `★ ${product.rating.toFixed(1)}`
+          )
+        );
+
+        const count = Number(product.rating_count || 0);
+
+        ratingRow.append(
+          makeElement(
+            'span',
+            'truncate',
+            `${count.toLocaleString('en-IN')} ratings`
+          )
+        );
+
+      } else {
+
+        ratingRow.append(
+          makeElement(
+            'span',
+            'text-slate-400',
+            'No ratings yet'
+          )
+        );
+
+      }
+
+      content.append(ratingRow);
+
+
+      // Price
+      const priceRow = makeElement(
+        'div',
+        'mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1'
+      );
+
+      priceRow.append(
+        makeElement(
+          'span',
+          'text-xl font-black tracking-tight text-slate-900',
+          formatPrice(product.price)
+        )
+      );
+
+      if (
+        typeof product.mrp === 'number' &&
+        product.mrp > 0 &&
+        product.mrp > (product.price || 0)
+      ) {
+
+        priceRow.append(
+          makeElement(
+            'span',
+            'text-xs text-slate-400 line-through',
+            formatPrice(product.mrp)
+          )
+        );
+
+      }
+
+      content.append(priceRow);
+
+
+      // Description
+      const descriptionText =
+        product.description ||
+        (
+          Array.isArray(product.specifications)
+            ? product.specifications.join(' · ')
+            : 'Product details unavailable.'
+        );
+
+      content.append(
+        makeElement(
+          'p',
+          'mt-3 line-clamp-3 min-h-[3.75rem] text-xs leading-5 text-slate-500',
+          descriptionText
+        )
+      );
+
+
+      // Flipkart product link
+      const productUrl = safeExternalUrl(
+        product.flipkart_url,
+        ['flipkart.com']
+      );
+
+      if (productUrl) {
+
+        const link = makeElement(
+          'a',
+          'mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-50 px-3 py-2.5 text-xs font-extrabold text-blue-700 transition hover:bg-blue-600 hover:text-white',
+          'View on Flipkart ↗'
+        );
+
+        link.href = productUrl;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+
+        content.append(link);
+
+      } else {
+
+        content.append(
+          makeElement(
+            'span',
+            'mt-4 inline-flex w-full justify-center rounded-xl bg-slate-100 px-3 py-2.5 text-xs font-bold text-slate-400',
+            'Product link unavailable'
+          )
+        );
+
+      }
+
+      card.append(content);
+
+      return card;
+
+    }
+
+
+    // Sort products
+    function sortedProducts() {
+
+      const products = [...currentProducts];
+
+      switch (sortSelect.value) {
+
+        case 'price-asc':
+          return products.sort(
+            (a, b) =>
+              (a.price ?? Infinity) -
+              (b.price ?? Infinity)
+          );
+
+        case 'price-desc':
+          return products.sort(
+            (a, b) =>
+              (b.price ?? -Infinity) -
+              (a.price ?? -Infinity)
+          );
+
+        case 'rating':
+          return products.sort(
+            (a, b) =>
+              (b.rating ?? -Infinity) -
+              (a.rating ?? -Infinity)
+          );
+
+        case 'discount':
+          return products.sort(
+            (a, b) =>
+              (b.discount ?? -Infinity) -
+              (a.discount ?? -Infinity)
+          );
+
+        default:
+          return products;
+
+      }
+
+    }
+
+
+    // Render all products
+    function drawProducts() {
+
+      productGrid.replaceChildren();
+
+      sortedProducts().forEach(product => {
+        productGrid.append(renderProduct(product));
+      });
+
+    }
+
+
+    // Empty / error state
+    function showState(title, message, isError = false) {
+
+      statePanel.classList.remove('hidden');
+
+      statePanel.classList.toggle(
+        'border-red-200',
+        isError
+      );
+
+      statePanel.classList.toggle(
+        'bg-red-50',
+        isError
+      );
+
+      statePanel.classList.toggle(
+        'border-dashed',
+        !isError
+      );
+
+      stateTitle.textContent = title;
+      stateMessage.textContent = message;
+
+      productGrid.replaceChildren();
+      resultsHead.classList.add('hidden');
+
+    }
+
+
+    // Loading indicator
+    function setLoading(loading) {
+
+      searchButton.disabled = loading;
+
+      buttonLabel.textContent = loading
+        ? 'Searching…'
+        : 'Search products';
+
+      buttonArrow.classList.toggle(
+        'hidden',
+        loading
+      );
+
+      let spinner = document.getElementById(
+        'loadingSpinner'
+      );
+
+      if (loading && !spinner) {
+
+        spinner = makeElement(
+          'span',
+          'spinner'
+        );
+
+        spinner.id = 'loadingSpinner';
+
+        searchButton.append(spinner);
+
+      } else if (!loading && spinner) {
+
+        spinner.remove();
+
+      }
+
+    }
+
+
+    // Search API
+    async function search(query) {
+
+      const cleanQuery = query.trim();
+
+      if (!cleanQuery) {
+
+        showState(
+          'Enter a search query',
+          'Try "laptops under 50k" or "Samsung 5G phones".'
+        );
+
+        input.focus();
+        return;
+
+      }
+
+      setLoading(true);
+
+      statePanel.classList.add('hidden');
+      resultsHead.classList.add('hidden');
+
+      productGrid.replaceChildren();
+
+      skeletonGrid.classList.remove('hidden');
+      skeletonGrid.classList.add('grid');
+
+      try {
+
+        // Same POST endpoint exposed in FastAPI Swagger.
+        const response = await fetch('/search', {
+
+          method: 'POST',
+
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+
+          body: JSON.stringify({
+            query: cleanQuery,
+            page: 1
+          })
+
+        });
+
+
+        let payload;
+
+        try {
+
+          payload = await response.json();
+
+        } catch (_) {
+
+          throw new Error(
+            `Invalid server response (HTTP ${response.status}).`
+          );
+
+        }
+
+
+        if (!response.ok) {
+
+          const detail =
+            typeof payload.detail === 'string'
+              ? payload.detail
+              : `Search failed (HTTP ${response.status}).`;
+
+          throw new Error(detail);
+
+        }
+
+
+        // Store products
+        currentProducts = Array.isArray(payload.products)
+          ? payload.products
+          : [];
+
+
+        // Results heading
+        resultsTitle.textContent =
+          `Results for "${cleanQuery}"`;
+
+        resultsMeta.textContent =
+          `${Number(
+            payload.count ?? currentProducts.length
+          ).toLocaleString('en-IN')} products found`;
+
+        resultsHead.classList.remove('hidden');
+
+
+        // Empty results
+        if (currentProducts.length === 0) {
+
+          showState(
+            'No products found',
+            'Try a broader search or a different product name.'
+          );
+
+          resultsHead.classList.remove('hidden');
+
+        } else {
+
+          statePanel.classList.add('hidden');
+
+          drawProducts();
+
+        }
+
+      } catch (error) {
+
+        showState(
+          'Something went wrong',
+          error.message ||
+          'Unable to fetch products. Please try again.',
+          true
+        );
+
+      } finally {
+
+        skeletonGrid.classList.add('hidden');
+        skeletonGrid.classList.remove('grid');
+
+        setLoading(false);
+
+      }
+
+    }
+
+
+    // Search form submission
+    form.addEventListener('submit', event => {
+
+      event.preventDefault();
+
+      search(input.value);
+
+    });
+
+
+    // Quick search suggestions
+    document.querySelectorAll('[data-query]').forEach(button => {
+
+      button.addEventListener('click', () => {
+
+        const query =
+          button.getAttribute('data-query') || '';
+
+        input.value = query;
+
+        search(query);
+
+      });
+
+    });
+
+
+    // Sorting
+    sortSelect.addEventListener(
+      'change',
+      drawProducts
+    );
+
+  </script>
+
+</body>
+
+</html>
