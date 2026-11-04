@@ -1,0 +1,9 @@
+services:
+  flipkart-api:
+    build: .
+    container_name: flipkart-api
+    ports:
+      - "8000:8000"
+    environment:
+      - FLIPKART_API_URL=https://2.rome.api.flipkart.com/api/4/page/fetch
+      - FLIPKART_ORIGIN=https://www.flipkart.com
